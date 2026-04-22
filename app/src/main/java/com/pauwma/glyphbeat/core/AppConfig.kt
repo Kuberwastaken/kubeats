@@ -12,7 +12,7 @@ object AppConfig {
      * Current application version.
      * Update this value when releasing a new version.
      */
-    const val APP_VERSION = "1.6.7"
+    const val APP_VERSION = "1.6.9"
 
     /**
      * Version code matching the build.gradle.kts versionCode.

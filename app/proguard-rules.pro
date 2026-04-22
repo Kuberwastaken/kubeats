@@ -24,3 +24,28 @@
 # DISABLE OBFUSCATION - KEEP OPTIMIZATION AND SHRINKING
 # =============================================================================
 -dontobfuscate
+
+# =============================================================================
+# GSON - Keep generic type info for TypeToken-based deserialization
+# =============================================================================
+-keepattributes Signature
+-keepattributes *Annotation*
+
+# Keep Gson TypeToken and its subclasses (anonymous inner classes)
+-keep class com.google.gson.reflect.TypeToken { *; }
+-keep class * extends com.google.gson.reflect.TypeToken
+
+# Keep generic signatures of classes used with Gson
+-keep class com.google.gson.** { *; }
+-keepclassmembers,allowobfuscation class * {
+    @com.google.gson.annotations.SerializedName <fields>;
+}
+
+# =============================================================================
+# APP DATA CLASSES - Keep fields used in JSON serialization
+# =============================================================================
+-keep class com.pauwma.glyphbeat.ui.settings.ThemeSettings { *; }
+-keep class com.pauwma.glyphbeat.ui.settings.ThemeSettingDefinition { *; }
+-keep class com.pauwma.glyphbeat.ui.settings.** { *; }
+-keep class com.pauwma.glyphbeat.data.ShakeControlSettings { *; }
+-keep class com.pauwma.glyphbeat.data.** { *; }
