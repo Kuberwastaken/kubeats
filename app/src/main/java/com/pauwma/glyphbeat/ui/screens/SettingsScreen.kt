@@ -98,6 +98,7 @@ import com.pauwma.glyphbeat.core.AppConfig
 import com.pauwma.glyphbeat.utils.AppUpdater
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.SystemUpdate
+import androidx.compose.ui.text.style.TextAlign
 
 @Composable
 private fun TestResultCard(
