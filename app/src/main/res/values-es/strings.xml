@@ -90,8 +90,8 @@
     <string name="set_cover_contrast_title">Mejorar contraste</string>
     <string name="set_cover_contrast_desc">Mejora de contraste para mayor visibilidad</string>
 
-    <string name="set_cover_fit_title">Ajustar al Glyph</string>
-    <string name="set_cover_fit_desc">Mostrar la portada completa sin recortar los bordes</string>
+    <string name="set_cover_fit_title">Escala de portada</string>
+    <string name="set_cover_fit_desc">Reducir para mostrar más de la portada (1.0 = completa)</string>
 
     <string name="set_cover_enhanced_title">Detalle mejorado</string>
     <string name="set_cover_enhanced_desc">Nitidez y tramado de la portada para resultados más reconocibles</string>

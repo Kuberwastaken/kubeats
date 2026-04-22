@@ -41,7 +41,7 @@ class CoverArtTheme(private val ctx: Context) : ThemeTemplate(), ThemeSettingsPr
     // Settings-driven properties with default values
     private var coverBrightness: Float = 1.0f
     private var enhanceContrast: Boolean = true
-    private var fitToGlyph: Boolean = false
+    private var coverScale: Float = 1.0f
     private var enhancedDetail: Boolean = false
     private var pausedOpacity: Float = 0.4f
 
@@ -316,7 +316,7 @@ class CoverArtTheme(private val ctx: Context) : ThemeTemplate(), ThemeSettingsPr
                         brightnessMultiplier = coverBrightness,
                         enhanceContrast = enhanceContrast,
                         rotationAngle = rotationAngle,
-                        fitToGlyph = fitToGlyph
+                        coverScale = coverScale
                     )
                 } else {
                     Log.v(LOG_TAG, "No full-res album art for enhanced mode, using fallback")
@@ -324,8 +324,8 @@ class CoverArtTheme(private val ctx: Context) : ThemeTemplate(), ThemeSettingsPr
                 }
             } else if (trackInfo?.albumArt != null) {
                 // Standard pipeline
-                val processedBitmap = if (fitToGlyph) {
-                    fitBitmapToGlyphShape(trackInfo.albumArt)
+                val processedBitmap = if (coverScale < 1.0f) {
+                    scaleBitmapForGlyph(trackInfo.albumArt, coverScale)
                 } else {
                     trackInfo.albumArt
                 }
@@ -341,13 +341,15 @@ class CoverArtTheme(private val ctx: Context) : ThemeTemplate(), ThemeSettingsPr
                 mediaHelper.bitmapToMatrixArray(null, coverBrightness, false)
             }
 
-            // Update cache only for non-rotating frames
-            if (!enableRotation && rotationAngle == 0f) {
+            // Update cache only for non-rotating frames AND only when we have real album art.
+            // If album art is null (metadata not loaded yet), skip caching so the next
+            // frame retries — avoids permanently showing the fallback music note pattern.
+            val hasAlbumArt = trackInfo?.albumArt != null ||
+                (enhancedDetail && cachedFullResBitmap != null)
+            if (!enableRotation && rotationAngle == 0f && hasAlbumArt) {
                 cachedTrackTitle = trackInfo?.title
                 cachedAlbumArt = trackInfo?.albumArt
                 cachedFrameData = frameData
-
-                // Cache paused frame data (opacity will be handled by unified model)
                 cachedPausedFrameData = frameData
             }
 
@@ -666,11 +668,15 @@ class CoverArtTheme(private val ctx: Context) : ThemeTemplate(), ThemeSettingsPr
                 defaultValue = true,
                 category = SettingCategories.EFFECTS
             )
-            .addToggleSetting(
-                id = "fit_to_glyph",
+            .addSliderSetting(
+                id = "cover_scale",
                 displayName = ctx.getString(R.string.set_cover_fit_title),
                 description = ctx.getString(R.string.set_cover_fit_desc),
-                defaultValue = false,
+                defaultValue = 1.0f,
+                minValue = 0.7f,
+                maxValue = 1.0f,
+                stepSize = 0.05f,
+                unit = null,
                 category = SettingCategories.VISUAL
             )
             .addToggleSetting(
@@ -731,8 +737,9 @@ class CoverArtTheme(private val ctx: Context) : ThemeTemplate(), ThemeSettingsPr
         // Apply contrast enhancement
         enhanceContrast = settings.getToggleValue("enhance_contrast", true)
 
-        // Apply fit to glyph
-        fitToGlyph = settings.getToggleValue("fit_to_glyph", false)
+        // Apply cover scale
+        coverScale = settings.getSliderValueFloat("cover_scale", 1.0f)
+            .coerceIn(0.7f, 1.0f)
 
         // Apply enhanced detail
         enhancedDetail = settings.getToggleValue("enhanced_detail", false)
@@ -773,45 +780,20 @@ class CoverArtTheme(private val ctx: Context) : ThemeTemplate(), ThemeSettingsPr
     }
 
     /**
-     * Scale album art down so the entire image fits within the Glyph's diamond shape,
-     * rather than filling the full grid (which clips the corners).
-     *
-     * Finds the largest centered square that fits entirely inside the diamond,
-     * scales the art to that size, and centers it on a black grid-sized canvas.
+     * Scale album art by the given factor and center it on a black grid-sized canvas.
+     * At 1.0 the image fills the full grid; lower values shrink it toward fitting
+     * inside the diamond shape.
      */
-    private fun fitBitmapToGlyphShape(bitmap: Bitmap): Bitmap {
-        val res = com.pauwma.glyphbeat.core.DeviceManager.resolution
-        val gs = res.gridSize
-        val shape = res.shape
+    private fun scaleBitmapForGlyph(bitmap: Bitmap, scale: Float): Bitmap {
+        val gs = com.pauwma.glyphbeat.core.DeviceManager.resolution.gridSize
+        val targetSize = (gs * scale).toInt().coerceIn(1, gs)
 
-        // Find the largest centered square that fits entirely within the diamond shape
-        var fitSize = gs
-        for (s in gs downTo 1) {
-            val startRow = (gs - s) / 2
-            val endRow = startRow + s - 1
-            var fits = true
-            for (row in startRow..endRow) {
-                if (row < 0 || row >= gs || shape[row] < s) {
-                    fits = false
-                    break
-                }
-            }
-            if (fits) {
-                fitSize = s
-                break
-            }
-        }
-
-        // Scale the album art to fit size
-        val scaled = Bitmap.createScaledBitmap(bitmap, fitSize, fitSize, true)
-
-        // Create a black canvas at full grid size and draw the scaled art centered
+        val scaled = Bitmap.createScaledBitmap(bitmap, targetSize, targetSize, true)
         val result = Bitmap.createBitmap(gs, gs, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(result)
         canvas.drawColor(Color.BLACK)
-        val offset = (gs - fitSize) / 2f
+        val offset = (gs - targetSize) / 2f
         canvas.drawBitmap(scaled, offset, offset, null)
-
         return result
     }
 

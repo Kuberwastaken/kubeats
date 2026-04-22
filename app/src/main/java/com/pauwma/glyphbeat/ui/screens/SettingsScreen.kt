@@ -95,6 +95,9 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.material.icons.filled.Settings
 import androidx.core.os.LocaleListCompat
 import com.pauwma.glyphbeat.core.AppConfig
+import com.pauwma.glyphbeat.utils.AppUpdater
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.SystemUpdate
 
 @Composable
 private fun TestResultCard(
@@ -1591,6 +1594,9 @@ fun SettingsScreen(
                     }
                 }
 
+        // Update Card
+        UpdateCard(context = context, customFont = customFont)
+
         // App Information Card
         Card(
             modifier = Modifier
@@ -1655,5 +1661,172 @@ fun SettingsScreen(
             } // End scrollable Column
         } // End Box
     } // End main column
+}
+
+@Composable
+private fun UpdateCard(
+    context: android.content.Context,
+    customFont: FontFamily
+) {
+    val scope = rememberCoroutineScope()
+
+    // States: idle → checking → result / downloading → done
+    var isChecking by remember { mutableStateOf(false) }
+    var releaseInfo by remember { mutableStateOf<AppUpdater.ReleaseInfo?>(null) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var isDownloading by remember { mutableStateOf(false) }
+    var downloadProgress by remember { mutableFloatStateOf(0f) }
+    var hasChecked by remember { mutableStateOf(false) }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1A1A))
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "Update",
+                style = MaterialTheme.typography.titleMedium.copy(fontFamily = customFont),
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+
+            Text(
+                text = "Current version: ${AppConfig.APP_VERSION}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+                modifier = Modifier.padding(top = 4.dp)
+            )
+
+            when {
+                // Downloading in progress
+                isDownloading -> {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    LinearProgressIndicator(
+                        progress = { downloadProgress },
+                        modifier = Modifier.fillMaxWidth(),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "Downloading… ${(downloadProgress * 100).toInt()}%",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 4.dp),
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+                // Checked and found a newer release
+                hasChecked && releaseInfo != null && AppUpdater.isNewer(releaseInfo!!) -> {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "${releaseInfo!!.name} available",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    if (releaseInfo!!.body.isNotBlank()) {
+                        Text(
+                            text = releaseInfo!!.body.lines().take(6).joinToString("\n"),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                            modifier = Modifier.padding(top = 4.dp),
+                            maxLines = 6,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                    Button(
+                        onClick = {
+                            val apkUrl = releaseInfo!!.apkUrl ?: return@Button
+                            isDownloading = true
+                            downloadProgress = 0f
+                            scope.launch {
+                                val file = withContext(Dispatchers.IO) {
+                                    AppUpdater.downloadApk(context, apkUrl) { progress ->
+                                        downloadProgress = progress
+                                    }
+                                }
+                                isDownloading = false
+                                if (file != null) {
+                                    AppUpdater.installApk(context, file)
+                                } else {
+                                    errorMessage = "Download failed"
+                                }
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 12.dp),
+                        enabled = releaseInfo!!.apkUrl != null,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Download,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Download & Install")
+                    }
+                }
+
+                // Checked but already up to date
+                hasChecked && (releaseInfo == null || !AppUpdater.isNewer(releaseInfo!!)) -> {
+                    Text(
+                        text = errorMessage ?: "You're on the latest version",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (errorMessage != null)
+                            MaterialTheme.colorScheme.error
+                        else
+                            MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                }
+            }
+
+            // Check button (visible when not downloading)
+            if (!isDownloading) {
+                OutlinedButton(
+                    onClick = {
+                        isChecking = true
+                        errorMessage = null
+                        scope.launch {
+                            val result = withContext(Dispatchers.IO) {
+                                AppUpdater.fetchLatestRelease()
+                            }
+                            releaseInfo = result
+                            if (result == null) errorMessage = "Couldn't reach GitHub"
+                            hasChecked = true
+                            isChecking = false
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = if (hasChecked) 8.dp else 12.dp),
+                    enabled = !isChecking
+                ) {
+                    if (isChecking) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.SystemUpdate,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(if (hasChecked) "Check again" else "Check for updates")
+                }
+            }
+        }
+    }
 }
 

@@ -117,8 +117,8 @@
     <string name="set_cover_contrast_title">Verbeter het contrast</string>
     <string name="set_cover_contrast_desc">Contrastverbetering om de zichtbaarheid te verbeteren</string>
 
-    <string name="set_cover_fit_title">Passend in Glyph</string>
-    <string name="set_cover_fit_desc">Toon de volledige hoes zonder de randen af te snijden</string>
+    <string name="set_cover_fit_title">Hoesschaal</string>
+    <string name="set_cover_fit_desc">Verklein om meer van de hoes te tonen (1.0 = volledig)</string>
 
     <string name="set_cover_enhanced_title">Verbeterd detail</string>
     <string name="set_cover_enhanced_desc">Verscherp en dither de albumhoes voor herkenbaarder resultaat</string>

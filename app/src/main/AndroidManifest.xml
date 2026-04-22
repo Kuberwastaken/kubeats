@@ -17,6 +17,9 @@
     
     <!-- Permission to load album art from network URLs (e.g., SoundCloud, YouTube Music) -->
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Permission to install APK updates from GitHub releases -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     
     <!-- Permission to start services on boot for auto-start functionality -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />

@@ -919,7 +919,7 @@ class MediaControlHelper(private val context: Context) {
      * @param brightnessMultiplier Brightness (0.0-1.0)
      * @param enhanceContrast Whether to apply contrast enhancement
      * @param rotationAngle Rotation in degrees
-     * @param fitToGlyph Whether to fit the image inside the diamond shape
+     * @param coverScale Scale factor (1.0 = full grid, lower = smaller/fitted)
      * @param ditherLevels Number of brightness levels for dithering (2-16, default 8)
      * @return IntArray of pixel intensities for the Glyph Matrix
      */
@@ -928,7 +928,7 @@ class MediaControlHelper(private val context: Context) {
         brightnessMultiplier: Float = 1f,
         enhanceContrast: Boolean = true,
         rotationAngle: Float = 0f,
-        fitToGlyph: Boolean = false,
+        coverScale: Float = 1.0f,
         ditherLevels: Int = 8
     ): IntArray {
         val res = com.pauwma.glyphbeat.core.DeviceManager.resolution
@@ -947,11 +947,11 @@ class MediaControlHelper(private val context: Context) {
             val sharpened = applyUnsharpMask(intermediate)
 
             // Step 3: Downscale to final target size
-            val targetSize = if (fitToGlyph) calculateGlyphFitSize(res) else gs
+            val targetSize = (gs * coverScale).toInt().coerceIn(1, gs)
             val downscaled = Bitmap.createScaledBitmap(sharpened, targetSize, targetSize, true)
 
-            // Step 4: If fitting to glyph, center on a black grid-sized canvas
-            val gridBitmap = if (fitToGlyph && targetSize < gs) {
+            // Step 4: If scaled down, center on a black grid-sized canvas
+            val gridBitmap = if (targetSize < gs) {
                 val result = Bitmap.createBitmap(gs, gs, Bitmap.Config.ARGB_8888)
                 val canvas = Canvas(result)
                 canvas.drawColor(Color.BLACK)
@@ -998,31 +998,6 @@ class MediaControlHelper(private val context: Context) {
                 brightnessMultiplier, enhanceContrast, rotationAngle
             )
         }
-    }
-
-    /**
-     * Find the largest centered square that fits entirely within the Glyph diamond shape.
-     * Phone 3: 17  (rows 4-20 all have width ≥ 17)
-     * Phone 4A: 9  (rows 2-10 all have width ≥ 9)
-     */
-    private fun calculateGlyphFitSize(
-        res: com.pauwma.glyphbeat.core.GlyphResolution
-    ): Int {
-        val gs = res.gridSize
-        val shape = res.shape
-        for (s in gs downTo 1) {
-            val startRow = (gs - s) / 2
-            val endRow = startRow + s - 1
-            var fits = true
-            for (row in startRow..endRow) {
-                if (row < 0 || row >= gs || shape[row] < s) {
-                    fits = false
-                    break
-                }
-            }
-            if (fits) return s
-        }
-        return gs
     }
 
     /**

@@ -2,29 +2,19 @@
 
 > A probably broken but cool modification of pauwma/GlyphBeat for Nothing Phone 3
 
-## 🌟 Overview
+## Overview
 **Kubeats** brings your Nothing Phone's Glyph interface to life with beautiful, custom and music-reactive animations (mostly focusing on the album cover parts) - building atop of the amazing work on Glyph Beat
 
 [![Kubeats-preview](https://github.com/user-attachments/assets/921ea196-97eb-4eff-b774-0fb7b2504cb0)](https://play.google.com/store/apps/details?id=com.pauwma.glyphbeat)
 
-### 🎯 Key Features
-
-- 🎨 **10+ Unique Animation Themes** - From minimal to a dancing duck
-- 📳 **Shake Controls** - Full custom shaking controls
-- 🌈 **Customizable Settings** - Adjust brightness, timeout, and animation parameters
-- 🚀 **Lightweight & Efficient** - Optimized for minimal battery impact
-- 🔒 **Privacy-First** - No data collection, no ads, no tracking
-
-## 🆕 Latest Update
-
-### What's New in v1.6.9
+### What's New in v1.6.7
 
 - **Better Art Representation** - using a custom technique to resize covers
 - **Full Album Cover Display** - some album covers were previously being cut off, we fixed that
 - **Auto Timeout** - when media is paused, the app automatically times out after a minute for your other glyph toys
 
 
-## 📱 Animation Themes
+## Animation Themes
 
 ### Core Animations
 | Theme | Description |
@@ -42,17 +32,7 @@
 |-------|------------|
 | **⏭️ Minimal Arrow** | Simple arrow indicators for track navigation |
 
-## Other Info
-Kubeats is designed with privacy as a core principle:
-
-- ✅ **No Data Collection** - We don't collect any personal information
-- ✅ **No Internet Access** - Except for optional donation links & some cover arts
-- ✅ **Local Processing** - All animations are generated on-device
-- ✅ **Open Source** - Full transparency in our code
-
-[Read our full Privacy Policy](https://pauwma.github.io/GlyphBeat/privacy.html)
-
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions from the community!
 
@@ -60,7 +40,7 @@ We welcome contributions from the community!
 - 🐛 [Report bugs](https://github.com/kuberwastaken/kubeats/issues/new?labels=bug)
 - 💡 [Request features](https://github.com/kuberwastaken/kubeats/issues/new)
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - **Glyph Beat** - For creating the amazing app I'm vandalizing here with weird features
 - **Nothing Technology** - For creating innovative hardware that inspires creativity
