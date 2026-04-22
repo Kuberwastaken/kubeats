@@ -3,7 +3,7 @@
 > A probably broken but cool modification of pauwma/GlyphBeat for Nothing Phone 3
 
 ## 🌟 Overview
-**Glyph Beat** brings your Nothing Phone's Glyph interface to life with beautiful, custom and music-reactive animations.
+**Kubeats** brings your Nothing Phone's Glyph interface to life with beautiful, custom and music-reactive animations (mostly focusing on the album cover parts) - building atop of the amazing work on Glyph Beat
 
 [![Kubeats-preview](https://github.com/user-attachments/assets/921ea196-97eb-4eff-b774-0fb7b2504cb0)](https://play.google.com/store/apps/details?id=com.pauwma.glyphbeat)
 
@@ -72,8 +72,6 @@ We welcome contributions from the community!
 
 <div align="center">
 
-**Made with 🤍 for the Nothing Community**
-
-[Website](https://pauwma.github.io/GlyphBeat) • [Privacy Policy](https://pauwma.github.io/GlyphBeat/privacy.html) • [Play Store](https://play.google.com/store/apps/details?id=com.pauwma.glyphbeat)
+**Made with 🤍 by [kuberwastaken](https://kuber.studio) for the Nothing Community**
 
 </div>
