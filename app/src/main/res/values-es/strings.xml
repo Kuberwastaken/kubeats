@@ -2,7 +2,7 @@
 <resources>
 
     <!-- - ────────── - Main - ────────── - -->
-    <string name="app_name">Glyph Beat</string>
+    <string name="app_name">Kubeats</string>
     <string name="toy_name_media_player">Reproductor de música</string>
     <string name="toy_summary_media_player">Interfaz visual del reproductor de música en la Glyph Matrix.</string>
     <string name="toy_name_next_track">Siguiente pista</string>
@@ -258,9 +258,9 @@
     <string name="bug_report_desc">¿Encontraste un error o necesitas ayuda? Contáctame para soporte</string>
     <string name="contact_button">Contáctame</string>
 
-    <!-- ───── Support GlyphBeat ───── -->
-    <string name="support_title">Apoya GlyphBeat</string>
-    <string name="support_desc">GlyphBeat es sin anuncios y construido con amor. ¿Te gusta? Invítame a un café para impulsar nuevas funciones; cualquier aporte ayuda. ¡Gracias! 🎵 🤍</string>
+    <!-- ───── Support Kubeats ───── -->
+    <string name="support_title">Apoya Kubeats</string>
+    <string name="support_desc">Kubeats es sin anuncios y construido con amor. ¿Te gusta? Invítame a un café para impulsar nuevas funciones; cualquier aporte ayuda. ¡Gracias! 🎵 🤍</string>
 
 
     <!-- ───── Tutorial ───── -->
@@ -279,7 +279,7 @@
     <!-- ───── App Information ───── -->
     <string name="language_japanese">Japonés</string>
     <string name="app_info_title">Información de la aplicación</string>
-    <string name="app_info_desc">GlyphBeat - Juguete de reproductor multimedia animado para Glyph Matrix</string>
+    <string name="app_info_desc">Kubeats - Juguete de reproductor multimedia animado para Glyph Matrix</string>
     <string name="version">Versión</string>
 
 
@@ -288,7 +288,7 @@
     <!-- - ────────── - Tutorial - ────────── - -->
 
     <!-- ───── Welcome Page ───── -->
-    <string name="tutorial_welcome_title">Glyph Beat</string>
+    <string name="tutorial_welcome_title">Kubeats</string>
     <string name="tutorial_welcome_description">Transforma la Glyph Matrix de tu dispositivo Nothing en un visualizador musical interactivo y controlador multimedia</string>
     <string name="tutorial_welcome_feature_music_title">Visualización Musical</string>
     <string name="tutorial_welcome_feature_music_desc">Animaciones personalizadas con tu música</string>
@@ -311,7 +311,7 @@
     <string name="tutorial_permissions_microphone_title">Acceso de Audio</string>
     <string name="tutorial_permissions_microphone_desc">Sincroniza las visualizaciones con tu música real en tiempo real</string>
     <string name="tutorial_permissions_why_title">¿Por qué estos permisos?</string>
-    <string name="tutorial_permissions_why_desc">Glyph Beat necesita estos permisos solo para sincronizar animaciones con tu música. No se graba ni transmite audio.</string>
+    <string name="tutorial_permissions_why_desc">Kubeats necesita estos permisos solo para sincronizar animaciones con tu música. No se graba ni transmite audio.</string>
     <string name="tutorial_permissions_back">Atrás</string>
     <string name="tutorial_permissions_continue">Continuar</string>
     <string name="tutorial_permissions_skip">Omitir por Ahora</string>
@@ -338,7 +338,7 @@
 
     <!-- ───── Completion Page ───── -->
     <string name="tutorial_completion_title">¡Todo Listo!</string>
-    <string name="tutorial_completion_subtitle">Tu Glyph Beat está listo para transformar tu experiencia musical</string>
+    <string name="tutorial_completion_subtitle">Tu Kubeats está listo para transformar tu experiencia musical</string>
     <string name="tutorial_completion_next_title">¿Qué Sigue?</string>
     <string name="tutorial_completion_step_glyph">Agregar el juguete a la Interfaz Glyph</string>
     <string name="tutorial_completion_step_music">Reproduce música para ver animaciones geniales</string>

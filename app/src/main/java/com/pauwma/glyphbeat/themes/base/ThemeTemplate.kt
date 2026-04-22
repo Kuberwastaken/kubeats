@@ -248,7 +248,7 @@ open class ThemeTemplate() : AnimationTheme() {
      * Theme creator/author name.
      * Credit the person who designed this theme.
      */
-    open val authorName: String = "GlyphBeat Team"
+    open val authorName: String = "Kubeats"
     
     /**
      * Theme version for compatibility tracking.

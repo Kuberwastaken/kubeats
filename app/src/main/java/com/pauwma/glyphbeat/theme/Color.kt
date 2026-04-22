@@ -2,13 +2,13 @@ package com.pauwma.glyphbeat.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Nothing Brand Colors - Minimalist Black/White/Grey with Red Accents
+// Brand Colors - Minimalist Black/White/Grey with Teal Accents
 val NothingBlack = Color(0xFF000000)
 val NothingDarkGrey = Color(0xFF1A1A1A)
 val NothingMediumGrey = Color(0xFF808080)
 val NothingLightGrey = Color(0xFFF5F5F5)
 val NothingWhite = Color(0xFFFFFFFF)
-val NothingRed = Color(0xFFD71921)
+val NothingRed = Color(0xFF5ABB9A)
 
 // Surface colors for different elevations
 val SurfaceDark = Color(0xFF121212)

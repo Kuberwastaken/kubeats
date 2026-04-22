@@ -54,7 +54,7 @@ object DebugLogger {
 
             combinedFile.writeText(buildString {
                 appendLine("═══════════════════════════════════════════")
-                appendLine("  GlyphBeat Debug Log - ${AppConfig.APP_VERSION}")
+                appendLine("  Kubeats Debug Log - ${AppConfig.APP_VERSION}")
                 appendLine("  Device: ${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL}")
                 appendLine("  Android: ${android.os.Build.VERSION.RELEASE} (SDK ${android.os.Build.VERSION.SDK_INT})")
                 appendLine("  Generated: ${SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(Date())}")
@@ -78,7 +78,7 @@ object DebugLogger {
             val intent = Intent(Intent.ACTION_SEND).apply {
                 type = "text/plain"
                 putExtra(Intent.EXTRA_STREAM, uri)
-                putExtra(Intent.EXTRA_SUBJECT, "GlyphBeat Debug Log - ${AppConfig.APP_VERSION}")
+                putExtra(Intent.EXTRA_SUBJECT, "Kubeats Debug Log - ${AppConfig.APP_VERSION}")
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }

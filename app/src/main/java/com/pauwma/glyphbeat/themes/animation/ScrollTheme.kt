@@ -25,7 +25,7 @@ class ScrollTheme(private val ctx: Context) : ThemeTemplate(), ThemeSettingsProv
 
     companion object {
         private const val LOG_TAG = "ScrollTheme"
-        private const val DEFAULT_TEXT = "GlyphBeat Music Player"
+        private const val DEFAULT_TEXT = "Kubeats Music Player"
         private const val OFFLINE_TEXT = "Nothing Playing"
         private const val SEPARATOR = " - "
         private const val TEXT_REPEAT_GAP = 20 // Pixels between text repeats
@@ -74,7 +74,7 @@ class ScrollTheme(private val ctx: Context) : ThemeTemplate(), ThemeSettingsProv
 
     override val titleTheme: String = ctx.getString(R.string.theme_scroll_title)
     override val descriptionTheme: String = ctx.getString(R.string.theme_scroll_desc)
-    override val authorName: String = "GlyphBeat Team"
+    override val authorName: String = "Kubeats"
     override val version: String = "1.0.0"
     override val category: String = "Information"
     override val tags: Array<String> = arrayOf("text", "scroll", "metadata", "information", "title", "artist")

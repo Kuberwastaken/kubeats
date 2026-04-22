@@ -6,7 +6,7 @@
     │                         🌍 Translation Instructions                         │
     ├─────────────────────────────────────────────────────────────────────────────┤
     │                                                                             │
-    │  Thank you for helping translate GlyphBeat! 🙏                              │
+    │  Thank you for helping translate Kubeats! 🙏                              │
     │                                                                             │
     │  To add a new language:                                                     │
     │  1. Copy this entire file to values-[language_code]/strings.xml             │
@@ -15,12 +15,12 @@
     │  2. Translate all <string> content while keeping the name="" attributes     │
     │     unchanged                                                               │
     │                                                                             │
-    │  Need help? Open an issue at: https://github.com/pauwma/GlyphBeat/issues    │
+    │  Need help? Open an issue at: https://github.com/pauwma/Kubeats/issues    │
     │                                                                             │
     └─────────────────────────────────────────────────────────────────────────────┘
 
     <!- - ────────── - Main - ────────── - -->
-    <string name="app_name">Glyph Beat</string>
+    <string name="app_name">Kubeats</string>
     <string name="toy_name_media_player">Mediaspeler</string>
     <string name="toy_summary_media_player">Visuele muziekspelerinterface op de glyphmatrix.</string>
     <string name="toy_name_next_track">Volgende nummer</string>
@@ -278,9 +278,9 @@
     <string name="send_log_button">Log versturen</string>
 
 
-    <!-- ───── Support GlyphBeat ───── -->
-    <string name="support_title">Steun GlyphBeat</string>
-    <string name="support_desc">GlyphBeat is advertentievrij en met liefde gemaakt. Bevalt het? Geef me een kop koffie om nieuwe functies te ontwikkelen, alle beetjes helpen. Bedankt! 🎵 🤍</string>
+    <!-- ───── Support Kubeats ───── -->
+    <string name="support_title">Steun Kubeats</string>
+    <string name="support_desc">Kubeats is advertentievrij en met liefde gemaakt. Bevalt het? Geef me een kop koffie om nieuwe functies te ontwikkelen, alle beetjes helpen. Bedankt! 🎵 🤍</string>
 
 
     <!-- ───── Tutorial ───── -->
@@ -298,7 +298,7 @@
 
     <!-- ───── App Information ───── -->
     <string name="app_info_title">App-informatie</string>
-    <string name="app_info_desc">GlyphBeat - Geanimeerd mediaspeler Toy voor Glyph Matrix</string>
+    <string name="app_info_desc">Kubeats - Geanimeerd mediaspeler Toy voor Glyph Matrix</string>
     <string name="version">Versie</string>
 
 
@@ -307,7 +307,7 @@
     <!-- - ────────── - Tutorial - ────────── - -->
 
     <!-- ───── Welcome Page ───── -->
-    <string name="tutorial_welcome_title">Glyph Beat</string>
+    <string name="tutorial_welcome_title">Kubeats</string>
     <string name="tutorial_welcome_description">Transformeer je Nothing device\'s Glyph Matrix in een interactieve muziekvisualisator en mediacontroller</string>
     <string name="tutorial_welcome_feature_music_title">Muziekvisualisatie</string>
     <string name="tutorial_welcome_feature_music_desc">Aangepaste animaties bij je muziek</string>
@@ -330,7 +330,7 @@
     <string name="tutorial_permissions_microphone_title">Audiotoegang</string>
     <string name="tutorial_permissions_microphone_desc">Synchroniseert visualisaties in realtime met je muziek</string>
     <string name="tutorial_permissions_why_title">Waarom deze toestemmingen?</string>
-    <string name="tutorial_permissions_why_desc">Glyph Beat heeft deze rechten alleen nodig om animaties met je muziek te synchroniseren. Er wordt geen audio opgenomen of verzonden.</string>
+    <string name="tutorial_permissions_why_desc">Kubeats heeft deze rechten alleen nodig om animaties met je muziek te synchroniseren. Er wordt geen audio opgenomen of verzonden.</string>
     <string name="tutorial_permissions_back">Terug</string>
     <string name="tutorial_permissions_continue">Doorgaan</string>
     <string name="tutorial_permissions_skip">Nu overslaan</string>
@@ -357,7 +357,7 @@
 
     <!-- ───── Completion Page ───── -->
     <string name="tutorial_completion_title">Je bent klaar!</string>
-    <string name="tutorial_completion_subtitle">Je Glyph Beat is klaar om je muziekervaring te transformeren</string>
+    <string name="tutorial_completion_subtitle">Je Kubeats is klaar om je muziekervaring te transformeren</string>
     <string name="tutorial_completion_next_title">Wat nu?</string>
     <string name="tutorial_completion_step_glyph">Voeg de toy toe aan de Glyph-interface</string>
     <string name="tutorial_completion_step_music">Speel muziek af om coole animaties te zien</string>

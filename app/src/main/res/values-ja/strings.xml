@@ -259,9 +259,9 @@
     <string name="contact_button">連絡</string>
 
 
-    <!-- ───── Support GlyphBeat ───── -->
-    <string name="support_title">GlyphBeatを支援する</string>
-    <string name="support_desc">GlyphBeatは広告なしで愛情を込めて開発されています。気に入っていただけたら、新機能開発のためにコーヒーを一杯ご支援ください。感謝！ 🎵 🤍</string>
+    <!-- ───── Support Kubeats ───── -->
+    <string name="support_title">Kubeatsを支援する</string>
+    <string name="support_desc">Kubeatsは広告なしで愛情を込めて開発されています。気に入っていただけたら、新機能開発のためにコーヒーを一杯ご支援ください。感謝！ 🎵 🤍</string>
 
 
     <!-- ───── Tutorial ───── -->
@@ -278,7 +278,7 @@
 
     <!-- ───── App Information ───── -->
     <string name="app_info_title">アプリ情報</string>
-    <string name="app_info_desc">GlyphBeat - Glyph Matrix用アニメーションメディアプレーヤートイ</string>
+    <string name="app_info_desc">Kubeats - Glyph Matrix用アニメーションメディアプレーヤートイ</string>
     <string name="version">バージョン</string>
 
 
@@ -287,7 +287,7 @@
     <!-- - ────────── - Tutorial - ────────── - -->
 
     <!-- ───── Welcome Page ───── -->
-    <string name="tutorial_welcome_title">Glyph Beat</string>
+    <string name="tutorial_welcome_title">Kubeats</string>
     <string name="tutorial_welcome_description">NothingデバイスのGlyph Matrixをインタラクティブな音楽ビジュアライザー兼メディアコントローラーに変身させよう</string>
     <string name="tutorial_welcome_feature_music_title">音楽ビジュアライゼーション</string>
     <string name="tutorial_welcome_feature_music_desc">音楽に合わせたカスタムアニメーション</string>
@@ -310,7 +310,7 @@
     <string name="tutorial_permissions_microphone_title">オーディオアクセス</string>
     <string name="tutorial_permissions_microphone_desc">実際の音楽とリアルタイムでビジュアライゼーションを同期</string>
     <string name="tutorial_permissions_why_title">なぜこれらの権限が必要？</string>
-    <string name="tutorial_permissions_why_desc">Glyph Beatが音楽とアニメーションを同期させるためだけに必要です。音声の録音や送信は行いません。</string>
+    <string name="tutorial_permissions_why_desc">Kubeatsが音楽とアニメーションを同期させるためだけに必要です。音声の録音や送信は行いません。</string>
     <string name="tutorial_permissions_back">戻る</string>
     <string name="tutorial_permissions_continue">続行</string>
     <string name="tutorial_permissions_skip">今はスキップ</string>
@@ -337,7 +337,7 @@
 
     <!-- ───── Completion Page ───── -->
     <string name="tutorial_completion_title">準備完了！</string>
-    <string name="tutorial_completion_subtitle">Glyph Beat の準備ができました。音楽体験を変革しましょう</string>
+    <string name="tutorial_completion_subtitle">Kubeats の準備ができました。音楽体験を変革しましょう</string>
     <string name="tutorial_completion_next_title">次にすること</string>
     <string name="tutorial_completion_step_glyph">Glyph インターフェースにトイを追加</string>
     <string name="tutorial_completion_step_music">音楽を再生してクールなアニメーションを見よう</string>

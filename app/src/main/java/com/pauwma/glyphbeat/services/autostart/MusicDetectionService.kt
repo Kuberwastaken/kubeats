@@ -315,7 +315,7 @@ class MusicDetectionService : Service() {
                 "Music Detection Service",
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = "Monitors music playback to automatically activate Glyph Beat"
+                description = "Monitors music playback to automatically activate Kubeats"
                 setShowBadge(false)
                 enableLights(false)
                 enableVibration(false)
@@ -335,7 +335,7 @@ class MusicDetectionService : Service() {
         )
         
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Glyph Beat Auto-Start")
+            .setContentTitle("Kubeats Auto-Start")
             .setContentText("Monitoring for music playback")
             .setSmallIcon(R.drawable.ic_music_note)
             .setContentIntent(pendingIntent)
@@ -812,7 +812,7 @@ class MusicDetectionService : Service() {
     
     private fun updateNotification(text: String) {
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Glyph Beat Auto-Start")
+            .setContentTitle("Kubeats Auto-Start")
             .setContentText(text)
             .setSmallIcon(R.drawable.ic_music_note)
             .setPriority(NotificationCompat.PRIORITY_LOW)

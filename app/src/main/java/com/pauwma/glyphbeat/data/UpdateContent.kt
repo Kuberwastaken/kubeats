@@ -75,7 +75,7 @@ object UpdateManager {
                 ),
                 UpdateContent.Feature(
                     title = "Universal Media Player",
-                    description = "Enjoy Glyph Beat anywhere your music comes from",
+                    description = "Enjoy Kubeats anywhere your music comes from",
                     emoji = "\uD83C\uDF10"
                 )
             ),

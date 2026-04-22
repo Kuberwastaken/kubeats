@@ -1,0 +1,78 @@
+name: Build & Release APK
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Create local.properties
+        run: echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
+
+      - name: Build release APK
+        run: ./gradlew assembleRelease --no-daemon
+
+      - name: Get version name
+        id: version
+        run: |
+          VERSION=$(grep 'versionName' app/build.gradle.kts | head -1 | sed 's/.*"\(.*\)".*/\1/')
+          echo "name=v${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          BASE=$(git log --all --oneline --format="%H %s" | grep "v1.3.2" | head -1 | cut -d' ' -f1)
+          {
+            echo "body<<CHANGELOG_EOF"
+            echo "## What's Changed since v1.3.2"
+            echo ""
+            if [ -n "$BASE" ]; then
+              git log "${BASE}..HEAD" --pretty=format:"- %s" --reverse
+            else
+              git log --oneline -20 --pretty=format:"- %s" --reverse
+            fi
+            echo ""
+            echo ""
+            echo "---"
+            echo "*Built from \`$(git rev-parse --short HEAD)\`*"
+            echo "CHANGELOG_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Rename APK
+        run: |
+          APK=$(find app/build/outputs/apk/release -name '*.apk' | head -1)
+          cp "$APK" "kubeats-${{ steps.version.outputs.name }}.apk"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.name }}
+          name: Kubeats ${{ steps.version.outputs.name }}
+          body: ${{ steps.changelog.outputs.body }}
+          files: kubeats-${{ steps.version.outputs.name }}.apk
+          draft: false
+          prerelease: false
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1519,183 +1519,6 @@ fun SettingsScreen(
             modifier = Modifier.padding(horizontal = 16.dp)
         )
 
-        // Bug Report Card
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = Color(0xFF1A1A1A)
-            )
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Text(
-                    text = context.getString(R.string.bug_report_title),
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontFamily = customFont
-                    ),
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-
-                Text(
-                    text = context.getString(R.string.bug_report_desc),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
-                    modifier = Modifier.padding(top = 4.dp)
-                )
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Button(
-                        onClick = {
-                            val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
-                                data = Uri.parse("mailto:")
-                                putExtra(Intent.EXTRA_EMAIL, arrayOf("contact+glyphbeat@pauwma.com"))
-                                putExtra(Intent.EXTRA_SUBJECT, "GlyphBeat Bug Report")
-                                putExtra(
-                                    Intent.EXTRA_TEXT,
-                                    "— App Info (don't edit) —\n" +
-                                    "Device: ${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL}\n" +
-                                    "OS: ${android.os.Build.DISPLAY}\n" +
-                                    "App: ${AppConfig.APP_VERSION}\n" +
-                                    "————————————\n\n" +
-                                    "Describe what happened:\n\n"
-                                )
-                            }
-                            try {
-                                context.startActivity(emailIntent)
-                            } catch (e: Exception) {
-                                val fallbackIntent = Intent(Intent.ACTION_VIEW).apply {
-                                    data = Uri.parse("https://github.com/pauwma/GlyphBeat/issues")
-                                }
-                                context.startActivity(fallbackIntent)
-                            }
-                        },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Mail,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(context.getString(R.string.contact_button))
-                    }
-
-                    OutlinedButton(
-                        onClick = {
-                            DebugLogger.shareLog(context)
-                        },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.BugReport,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(context.getString(R.string.send_log_button))
-                    }
-                }
-            }
-        }
-
-        // Support/Donation Card
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = Color(0xFF1A1A1A)
-            )
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = context.getString(R.string.support_title),
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontFamily = customFont
-                        ),
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                }
-
-                Text(
-                    text = context.getString(R.string.support_desc),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
-                    modifier = Modifier.padding(top = 4.dp)
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // Main donation button
-                Button(
-                    onClick = {
-                        val intent = Intent(Intent.ACTION_VIEW).apply {
-                            data = Uri.parse("https://www.buymeacoffee.com/pauwma")
-                        }
-                        context.startActivity(intent)
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    )
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.LocalCafe,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Buy me a coffee")
-                }
-
-                // Alternative donation options
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    OutlinedButton(
-                        onClick = {
-                            val intent = Intent(Intent.ACTION_VIEW).apply {
-                                data = Uri.parse("https://paypal.me/pauwma")
-                            }
-                            context.startActivity(intent)
-                        },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text("PayPal", style = MaterialTheme.typography.bodySmall)
-                    }
-
-                    OutlinedButton(
-                        onClick = {
-                            val intent = Intent(Intent.ACTION_VIEW).apply {
-                                data = Uri.parse("https://github.com/sponsors/pauwma")
-                            }
-                            context.startActivity(intent)
-                        },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text("GitHub", style = MaterialTheme.typography.bodySmall)
-                    }
-                }
-            }
-        }
-
                 // Language Settings Card
                 Card(
                     modifier = Modifier
@@ -1768,59 +1591,6 @@ fun SettingsScreen(
                     }
                 }
 
-        // Tutorial Card
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = Color(0xFF1A1A1A)
-            )
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Text(
-                    text = context.getString(R.string.tutorial_title),
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontFamily = customFont,
-                    ),
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-
-                Text(
-                    text = context.getString(R.string.tutorial_desc),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
-                    modifier = Modifier.padding(top = 4.dp)
-                )
-
-                Button(
-                    onClick = {
-                        // Reset tutorial and launch it
-                        com.pauwma.glyphbeat.tutorial.utils.TutorialPreferences.resetTutorial(context)
-                        val intent = Intent(context, com.pauwma.glyphbeat.tutorial.TutorialActivity::class.java)
-                        context.startActivity(intent)
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 12.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = com.pauwma.glyphbeat.theme.NothingRed
-                    )
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.School,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(context.getString(R.string.tutorial_button))
-                }
-            }
-        }
-
         // App Information Card
         Card(
             modifier = Modifier
@@ -1853,14 +1623,14 @@ fun SettingsScreen(
                     modifier = Modifier.padding(top = 8.dp),
                     text = buildAnnotatedString {
                         append("Version: ${AppConfig.APP_VERSION} - ")
-                        pushStringAnnotation(tag = "URL", annotation = "https://pauwma.com")
+                        pushStringAnnotation(tag = "URL", annotation = "https://kuber.studio")
                         withStyle(
                             style = SpanStyle(
                                 color = MaterialTheme.colorScheme.primary,
                                 textDecoration = TextDecoration.Underline
                             )
                         ) {
-                            append("pauwma")
+                            append("kuberwastaken")
                         }
                         pop()
                     },
@@ -1870,8 +1640,8 @@ fun SettingsScreen(
                     onClick = { offset ->
                         val annotations = buildAnnotatedString {
                             append("Version: ${AppConfig.APP_VERSION} - ")
-                            pushStringAnnotation(tag = "URL", annotation = "https://pauwma.com    ")
-                            append("pauwma")
+                            pushStringAnnotation(tag = "URL", annotation = "https://kuber.studio")
+                            append("kuberwastaken")
                             pop()
                         }.getStringAnnotations(tag = "URL", start = offset, end = offset)
                         annotations.firstOrNull()?.let { annotation ->

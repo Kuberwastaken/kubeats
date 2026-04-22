@@ -20,8 +20,8 @@
     └─────────────────────────────────────────────────────────────────────────────┘
 
     <!- - ────────── - Main - ────────── - -->
-    <string name="app_name">Glyph Beat</string>
-    <string name="toy_name_media_player">Glyph Beat</string>
+    <string name="app_name">Kubeats</string>
+    <string name="toy_name_media_player">Kubeats</string>
     <string name="toy_summary_media_player">Visual music player interface on the glyph matrix.</string>
     <string name="toy_name_next_track">Next Track</string>
     <string name="toy_summary_next_track">Long press to skip to next track.</string>
@@ -215,7 +215,7 @@
 
     <!-- ───── Music Apps ───── -->
     <string name="music_apps_title">Music Apps</string>
-    <string name="music_apps_desc">Select which apps can activate Glyph Beat visualizations</string>
+    <string name="music_apps_desc">Select which apps can activate Kubeats visualizations</string>
 
     <!-- ───── Auto Start ───── -->
     <string name="auto_start_title">Auto-Start</string>
@@ -308,7 +308,7 @@
 
     <!-- ───── App Information ───── -->
     <string name="app_info_title">App Information</string>
-    <string name="app_info_desc">GlyphBeat - Animated Media Player Toy for Glyph Matrix</string>
+    <string name="app_info_desc">Kubeats - Animated Media Player Toy for Glyph Matrix</string>
     <string name="version">Version</string>
 
 
@@ -317,7 +317,7 @@
     <!-- - ────────── - Tutorial - ────────── - -->
 
     <!-- ───── Welcome Page ───── -->
-    <string name="tutorial_welcome_title">Glyph Beat</string>
+    <string name="tutorial_welcome_title">Kubeats</string>
     <string name="tutorial_welcome_description">Transform your Nothing device\'s Glyph Matrix into an interactive music visualizer and media controller</string>
     <string name="tutorial_welcome_feature_music_title">Music Visualization</string>
     <string name="tutorial_welcome_feature_music_desc">Custom animations with your music</string>
@@ -340,7 +340,7 @@
     <string name="tutorial_permissions_microphone_title">Audio Access</string>
     <string name="tutorial_permissions_microphone_desc">Syncs visualizations with your actual music in real time</string>
     <string name="tutorial_permissions_why_title">Why these permissions?</string>
-    <string name="tutorial_permissions_why_desc">Glyph Beat needs these permissions only to sync animations with your music. No audio is recorded or transmitted.</string>
+    <string name="tutorial_permissions_why_desc">Kubeats needs these permissions only to sync animations with your music. No audio is recorded or transmitted.</string>
     <string name="tutorial_permissions_back">Back</string>
     <string name="tutorial_permissions_continue">Continue</string>
     <string name="tutorial_permissions_skip">Skip for Now</string>
@@ -367,7 +367,7 @@
 
     <!-- ───── Completion Page ───── -->
     <string name="tutorial_completion_title">You\'re All Set!</string>
-    <string name="tutorial_completion_subtitle">Your Glyph Beat is ready to transform your music experience</string>
+    <string name="tutorial_completion_subtitle">Your Kubeats is ready to transform your music experience</string>
     <string name="tutorial_completion_next_title">What\'s Next?</string>
     <string name="tutorial_completion_step_glyph">Add the toy into the Glyph Interface</string>
     <string name="tutorial_completion_step_music">Play music to see cool animations</string>
