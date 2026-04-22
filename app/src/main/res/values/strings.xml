@@ -119,6 +119,12 @@
     <string name="set_cover_contrast_title">Enhance Contrast</string>
     <string name="set_cover_contrast_desc">Contrast enhancement to improve visibility</string>
 
+    <string name="set_cover_fit_title">Fit to Glyph</string>
+    <string name="set_cover_fit_desc">Show the full cover without cropping the edges</string>
+
+    <string name="set_cover_enhanced_title">Enhanced Detail</string>
+    <string name="set_cover_enhanced_desc">Sharpen and dither the cover art for more recognizable results</string>
+
     <string name="set_cover_rotation_title">Enable Rotation</string>
     <string name="set_cover_rotation_desc">Rotate the album art continuously</string>
 

@@ -3,6 +3,8 @@ package com.pauwma.glyphbeat.themes.animation
 import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
 import android.util.Log
 import com.pauwma.glyphbeat.sound.MediaControlHelper
 import com.pauwma.glyphbeat.themes.base.ThemeTemplate
@@ -39,7 +41,13 @@ class CoverArtTheme(private val ctx: Context) : ThemeTemplate(), ThemeSettingsPr
     // Settings-driven properties with default values
     private var coverBrightness: Float = 1.0f
     private var enhanceContrast: Boolean = true
+    private var fitToGlyph: Boolean = false
+    private var enhancedDetail: Boolean = false
     private var pausedOpacity: Float = 0.4f
+
+    // Cache for full-resolution bitmap used by enhanced detail mode
+    private var cachedFullResBitmap: Bitmap? = null
+    private var cachedFullResTitle: String? = null
 
     // Rotation settings
     private var enableRotation: Boolean = false
@@ -299,19 +307,38 @@ class CoverArtTheme(private val ctx: Context) : ThemeTemplate(), ThemeSettingsPr
             }
 
             // Process new album art with settings applied
-            val frameData = if (trackInfo?.albumArt != null) {
-                // Log.v(LOG_TAG, "Converting album art for track: ${trackInfo.title} (rotation: ${rotationAngle}°)")
+            val frameData = if (enhancedDetail) {
+                // Enhanced pipeline: full-res → unsharp mask → downscale → dither
+                val fullResBitmap = getFullResBitmap(trackInfo?.title)
+                if (fullResBitmap != null) {
+                    mediaHelper.processFullResAlbumArt(
+                        fullResBitmap = fullResBitmap,
+                        brightnessMultiplier = coverBrightness,
+                        enhanceContrast = enhanceContrast,
+                        rotationAngle = rotationAngle,
+                        fitToGlyph = fitToGlyph
+                    )
+                } else {
+                    Log.v(LOG_TAG, "No full-res album art for enhanced mode, using fallback")
+                    mediaHelper.bitmapToMatrixArray(null, coverBrightness, false)
+                }
+            } else if (trackInfo?.albumArt != null) {
+                // Standard pipeline
+                val processedBitmap = if (fitToGlyph) {
+                    fitBitmapToGlyphShape(trackInfo.albumArt)
+                } else {
+                    trackInfo.albumArt
+                }
 
-                // Apply rotation and contrast settings (brightness handled by unified model)
                 mediaHelper.bitmapToMatrixArray(
-                    bitmap = trackInfo.albumArt,
+                    bitmap = processedBitmap,
                     brightnessMultiplier = coverBrightness,
                     enhanceContrast = enhanceContrast,
                     rotationAngle = rotationAngle
                 )
             } else {
                 Log.v(LOG_TAG, "No album art available, using fallback pattern")
-                mediaHelper.bitmapToMatrixArray(null, coverBrightness, false) // Fallback (brightness handled by unified model)
+                mediaHelper.bitmapToMatrixArray(null, coverBrightness, false)
             }
 
             // Update cache only for non-rotating frames
@@ -433,7 +460,23 @@ class CoverArtTheme(private val ctx: Context) : ThemeTemplate(), ThemeSettingsPr
         cachedPausedFrameData = null
         cachedRotationFrames = null
         cachedRotationTrackTitle = null
+        cachedFullResBitmap = null
+        cachedFullResTitle = null
         Log.v(LOG_TAG, "Album art cache cleared")
+    }
+
+    /**
+     * Get the full-resolution album art bitmap, using a cache to avoid
+     * repeated metadata / URI loads on every frame.
+     */
+    private fun getFullResBitmap(currentTitle: String?): Bitmap? {
+        if (currentTitle != null && currentTitle == cachedFullResTitle && cachedFullResBitmap != null) {
+            return cachedFullResBitmap
+        }
+        val fullResInfo = mediaHelper.getTrackInfoForUI()
+        cachedFullResBitmap = fullResInfo?.albumArt
+        cachedFullResTitle = fullResInfo?.title
+        return cachedFullResBitmap
     }
 
     /**
@@ -624,6 +667,20 @@ class CoverArtTheme(private val ctx: Context) : ThemeTemplate(), ThemeSettingsPr
                 category = SettingCategories.EFFECTS
             )
             .addToggleSetting(
+                id = "fit_to_glyph",
+                displayName = ctx.getString(R.string.set_cover_fit_title),
+                description = ctx.getString(R.string.set_cover_fit_desc),
+                defaultValue = false,
+                category = SettingCategories.VISUAL
+            )
+            .addToggleSetting(
+                id = "enhanced_detail",
+                displayName = ctx.getString(R.string.set_cover_enhanced_title),
+                description = ctx.getString(R.string.set_cover_enhanced_desc),
+                defaultValue = false,
+                category = SettingCategories.EFFECTS
+            )
+            .addToggleSetting(
                 id = "enable_rotation",
                 displayName = ctx.getString(R.string.set_cover_rotation_title),
                 description = ctx.getString(R.string.set_cover_rotation_desc),
@@ -674,6 +731,12 @@ class CoverArtTheme(private val ctx: Context) : ThemeTemplate(), ThemeSettingsPr
         // Apply contrast enhancement
         enhanceContrast = settings.getToggleValue("enhance_contrast", true)
 
+        // Apply fit to glyph
+        fitToGlyph = settings.getToggleValue("fit_to_glyph", false)
+
+        // Apply enhanced detail
+        enhancedDetail = settings.getToggleValue("enhanced_detail", false)
+
         // Apply paused opacity
         pausedOpacity = settings.getSliderValueFloat("paused_opacity", 0.4f)
             .coerceIn(0.2f, 0.8f)
@@ -707,6 +770,49 @@ class CoverArtTheme(private val ctx: Context) : ThemeTemplate(), ThemeSettingsPr
 
         // Clear cache to force refresh with new settings
         clearCache()
+    }
+
+    /**
+     * Scale album art down so the entire image fits within the Glyph's diamond shape,
+     * rather than filling the full grid (which clips the corners).
+     *
+     * Finds the largest centered square that fits entirely inside the diamond,
+     * scales the art to that size, and centers it on a black grid-sized canvas.
+     */
+    private fun fitBitmapToGlyphShape(bitmap: Bitmap): Bitmap {
+        val res = com.pauwma.glyphbeat.core.DeviceManager.resolution
+        val gs = res.gridSize
+        val shape = res.shape
+
+        // Find the largest centered square that fits entirely within the diamond shape
+        var fitSize = gs
+        for (s in gs downTo 1) {
+            val startRow = (gs - s) / 2
+            val endRow = startRow + s - 1
+            var fits = true
+            for (row in startRow..endRow) {
+                if (row < 0 || row >= gs || shape[row] < s) {
+                    fits = false
+                    break
+                }
+            }
+            if (fits) {
+                fitSize = s
+                break
+            }
+        }
+
+        // Scale the album art to fit size
+        val scaled = Bitmap.createScaledBitmap(bitmap, fitSize, fitSize, true)
+
+        // Create a black canvas at full grid size and draw the scaled art centered
+        val result = Bitmap.createBitmap(gs, gs, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(result)
+        canvas.drawColor(Color.BLACK)
+        val offset = (gs - fitSize) / 2f
+        canvas.drawBitmap(scaled, offset, offset, null)
+
+        return result
     }
 
     private companion object {

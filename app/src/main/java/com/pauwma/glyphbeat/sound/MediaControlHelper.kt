@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.Matrix
@@ -899,6 +900,283 @@ class MediaControlHelper(private val context: Context) {
         }
     }
     
+    // =========================================================================
+    // ENHANCED DETAIL PROCESSING
+    // =========================================================================
+
+    /**
+     * Process full-resolution album art with enhanced detail preservation.
+     *
+     * Pipeline:
+     * 1. Scale to intermediate size (~100px) to keep processing fast
+     * 2. Unsharp mask at intermediate resolution to emphasize edges before downscale
+     * 3. Downscale to grid size (25x25 / 13x13)
+     * 4. Optionally fit within the diamond shape
+     * 5. Apply rotation, grayscale conversion, contrast, brightness
+     * 6. Multi-level Floyd-Steinberg dithering for perceptual detail
+     *
+     * @param fullResBitmap Full-resolution album art bitmap
+     * @param brightnessMultiplier Brightness (0.0-1.0)
+     * @param enhanceContrast Whether to apply contrast enhancement
+     * @param rotationAngle Rotation in degrees
+     * @param fitToGlyph Whether to fit the image inside the diamond shape
+     * @param ditherLevels Number of brightness levels for dithering (2-16, default 8)
+     * @return IntArray of pixel intensities for the Glyph Matrix
+     */
+    fun processFullResAlbumArt(
+        fullResBitmap: Bitmap,
+        brightnessMultiplier: Float = 1f,
+        enhanceContrast: Boolean = true,
+        rotationAngle: Float = 0f,
+        fitToGlyph: Boolean = false,
+        ditherLevels: Int = 8
+    ): IntArray {
+        val res = com.pauwma.glyphbeat.core.DeviceManager.resolution
+        val gs = res.gridSize
+
+        return try {
+            // Step 1: Scale to intermediate resolution for unsharp masking
+            // ~100px is enough to preserve edges while keeping processing fast
+            val maxDim = maxOf(fullResBitmap.width, fullResBitmap.height)
+            val intermediateSize = 100.coerceAtMost(maxDim)
+            val intermediate = Bitmap.createScaledBitmap(
+                fullResBitmap, intermediateSize, intermediateSize, true
+            )
+
+            // Step 2: Unsharp mask — emphasize edges before the extreme downscale
+            val sharpened = applyUnsharpMask(intermediate)
+
+            // Step 3: Downscale to final target size
+            val targetSize = if (fitToGlyph) calculateGlyphFitSize(res) else gs
+            val downscaled = Bitmap.createScaledBitmap(sharpened, targetSize, targetSize, true)
+
+            // Step 4: If fitting to glyph, center on a black grid-sized canvas
+            val gridBitmap = if (fitToGlyph && targetSize < gs) {
+                val result = Bitmap.createBitmap(gs, gs, Bitmap.Config.ARGB_8888)
+                val canvas = Canvas(result)
+                canvas.drawColor(Color.BLACK)
+                val offset = (gs - targetSize) / 2f
+                canvas.drawBitmap(downscaled, offset, offset, null)
+                result
+            } else {
+                downscaled
+            }
+
+            // Step 5: Apply rotation
+            val rotated = if (rotationAngle != 0f) {
+                rotateBitmap(gridBitmap, rotationAngle)
+            } else {
+                gridBitmap
+            }
+
+            // Step 6: Convert to grayscale
+            val rawArray = IntArray(gs * gs)
+            for (row in 0 until gs) {
+                for (col in 0 until gs) {
+                    val pixel = rotated.getPixel(col, row)
+                    val red = (pixel shr 16) and 0xFF
+                    val green = (pixel shr 8) and 0xFF
+                    val blue = pixel and 0xFF
+                    rawArray[row * gs + col] = (0.299 * red + 0.587 * green + 0.114 * blue).toInt()
+                }
+            }
+
+            // Step 7: Contrast enhancement
+            val contrastArray = if (enhanceContrast) enhanceContrast(rawArray) else rawArray
+
+            // Step 8: Brightness
+            val brightnessArray = contrastArray.map {
+                (it * brightnessMultiplier).toInt().coerceIn(0, 255)
+            }.toIntArray()
+
+            // Step 9: Multi-level Floyd-Steinberg dithering
+            applyFloydSteinbergDithering(brightnessArray, gs, gs, ditherLevels)
+        } catch (e: Exception) {
+            Log.w(LOG_TAG, "Enhanced processing failed, falling back: ${e.message}")
+            bitmapToMatrixArray(
+                Bitmap.createScaledBitmap(fullResBitmap, gs, gs, true),
+                brightnessMultiplier, enhanceContrast, rotationAngle
+            )
+        }
+    }
+
+    /**
+     * Find the largest centered square that fits entirely within the Glyph diamond shape.
+     * Phone 3: 17  (rows 4-20 all have width ≥ 17)
+     * Phone 4A: 9  (rows 2-10 all have width ≥ 9)
+     */
+    private fun calculateGlyphFitSize(
+        res: com.pauwma.glyphbeat.core.GlyphResolution
+    ): Int {
+        val gs = res.gridSize
+        val shape = res.shape
+        for (s in gs downTo 1) {
+            val startRow = (gs - s) / 2
+            val endRow = startRow + s - 1
+            var fits = true
+            for (row in startRow..endRow) {
+                if (row < 0 || row >= gs || shape[row] < s) {
+                    fits = false
+                    break
+                }
+            }
+            if (fits) return s
+        }
+        return gs
+    }
+
+    /**
+     * Unsharp masking: sharpen an image by subtracting a blurred version.
+     * result = original + strength * (original − blurred)
+     *
+     * @param bitmap Source bitmap (any size, but ~100px is the sweet spot here)
+     * @param strength How aggressively to sharpen (1.0 = subtle, 2.0 = strong)
+     * @param blurRadius Box-blur radius in pixels
+     */
+    private fun applyUnsharpMask(
+        bitmap: Bitmap,
+        strength: Float = 1.5f,
+        blurRadius: Int = 2
+    ): Bitmap {
+        val w = bitmap.width
+        val h = bitmap.height
+        val pixels = IntArray(w * h)
+        bitmap.getPixels(pixels, 0, w, 0, 0, w, h)
+
+        // Two-pass box blur as a fast Gaussian approximation
+        val blurred = twoPassBoxBlur(pixels, w, h, blurRadius)
+
+        // Combine: sharpen = original + strength * (original − blurred) per channel
+        val result = IntArray(pixels.size)
+        for (i in pixels.indices) {
+            val oA = (pixels[i] shr 24) and 0xFF
+            val oR = (pixels[i] shr 16) and 0xFF
+            val oG = (pixels[i] shr 8) and 0xFF
+            val oB = pixels[i] and 0xFF
+
+            val bR = (blurred[i] shr 16) and 0xFF
+            val bG = (blurred[i] shr 8) and 0xFF
+            val bB = blurred[i] and 0xFF
+
+            val nR = (oR + strength * (oR - bR)).toInt().coerceIn(0, 255)
+            val nG = (oG + strength * (oG - bG)).toInt().coerceIn(0, 255)
+            val nB = (oB + strength * (oB - bB)).toInt().coerceIn(0, 255)
+
+            result[i] = (oA shl 24) or (nR shl 16) or (nG shl 8) or nB
+        }
+
+        val out = bitmap.copy(bitmap.config ?: Bitmap.Config.ARGB_8888, true)
+        out.setPixels(result, 0, w, 0, 0, w, h)
+        return out
+    }
+
+    /**
+     * Separable two-pass box blur (horizontal then vertical).
+     * O(width * height * radius) — trivial at ~100px.
+     */
+    private fun twoPassBoxBlur(
+        pixels: IntArray,
+        width: Int,
+        height: Int,
+        radius: Int
+    ): IntArray {
+        val temp = IntArray(pixels.size)
+        val out = IntArray(pixels.size)
+
+        // Horizontal pass
+        for (y in 0 until height) {
+            for (x in 0 until width) {
+                var rSum = 0; var gSum = 0; var bSum = 0; var count = 0
+                for (dx in -radius..radius) {
+                    val nx = (x + dx).coerceIn(0, width - 1)
+                    val px = pixels[y * width + nx]
+                    rSum += (px shr 16) and 0xFF
+                    gSum += (px shr 8) and 0xFF
+                    bSum += px and 0xFF
+                    count++
+                }
+                val a = (pixels[y * width + x] shr 24) and 0xFF
+                temp[y * width + x] =
+                    (a shl 24) or
+                    ((rSum / count) shl 16) or
+                    ((gSum / count) shl 8) or
+                    (bSum / count)
+            }
+        }
+
+        // Vertical pass
+        for (x in 0 until width) {
+            for (y in 0 until height) {
+                var rSum = 0; var gSum = 0; var bSum = 0; var count = 0
+                for (dy in -radius..radius) {
+                    val ny = (y + dy).coerceIn(0, height - 1)
+                    val px = temp[ny * width + x]
+                    rSum += (px shr 16) and 0xFF
+                    gSum += (px shr 8) and 0xFF
+                    bSum += px and 0xFF
+                    count++
+                }
+                val a = (temp[y * width + x] shr 24) and 0xFF
+                out[y * width + x] =
+                    (a shl 24) or
+                    ((rSum / count) shl 16) or
+                    ((gSum / count) shl 8) or
+                    (bSum / count)
+            }
+        }
+
+        return out
+    }
+
+    /**
+     * Multi-level Floyd-Steinberg error-diffusion dithering.
+     *
+     * Quantizes to [levels] brightness steps and spreads the rounding error to
+     * neighbouring pixels, creating perceptual half-tones that reveal detail
+     * the raw grayscale values cannot show at this resolution.
+     *
+     * @param array   Pixel intensities 0-255 in row-major order
+     * @param width   Grid width
+     * @param height  Grid height
+     * @param levels  Number of output brightness levels (2 = pure B&W, 8 = recommended)
+     */
+    private fun applyFloydSteinbergDithering(
+        array: IntArray,
+        width: Int,
+        height: Int,
+        levels: Int
+    ): IntArray {
+        val work = FloatArray(array.size) { array[it].toFloat() }
+        val result = IntArray(array.size)
+        val step = 255f / (levels - 1).coerceAtLeast(1)
+
+        for (y in 0 until height) {
+            for (x in 0 until width) {
+                val idx = y * width + x
+                val oldVal = work[idx].coerceIn(0f, 255f)
+
+                // Quantize to the nearest allowed level
+                val newVal = (Math.round(oldVal / step) * step).coerceIn(0f, 255f)
+                result[idx] = newVal.toInt()
+
+                val error = oldVal - newVal
+
+                // Distribute error with Floyd-Steinberg coefficients
+                if (x + 1 < width)
+                    work[idx + 1] += error * 7f / 16f
+                if (y + 1 < height) {
+                    if (x - 1 >= 0)
+                        work[(y + 1) * width + (x - 1)] += error * 3f / 16f
+                    work[(y + 1) * width + x] += error * 5f / 16f
+                    if (x + 1 < width)
+                        work[(y + 1) * width + (x + 1)] += error * 1f / 16f
+                }
+            }
+        }
+
+        return result
+    }
+
     /**
      * Create a fallback pattern when no album art is available.
      * Shows a simple music note pattern.

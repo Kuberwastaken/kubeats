@@ -99,6 +99,12 @@
     <string name="set_cover_contrast_title">コントラスト強調</string>
     <string name="set_cover_contrast_desc">コントラストを強調して視認性を向上</string>
 
+    <string name="set_cover_fit_title">Glyphに合わせる</string>
+    <string name="set_cover_fit_desc">端を切り取らずにカバー全体を表示</string>
+
+    <string name="set_cover_enhanced_title">ディテール強化</string>
+    <string name="set_cover_enhanced_desc">シャープ化とディザリングでカバーアートをより鮮明に表示</string>
+
     <string name="set_cover_rotation_title">回転を有効化</string>
     <string name="set_cover_rotation_desc">アルバムアートを連続回転</string>
 

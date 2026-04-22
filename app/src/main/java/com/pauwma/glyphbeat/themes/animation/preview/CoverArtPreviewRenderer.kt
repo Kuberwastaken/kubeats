@@ -49,15 +49,20 @@ class CoverArtPreviewRenderer {
     ): Bitmap {
         try {
             // Step 1: Scale to target size efficiently
-            val scaledBitmap = scaleBitmapEfficiently(albumArt, targetSize)
-            
+            var scaledBitmap = scaleBitmapEfficiently(albumArt, targetSize)
+
+            // Step 1.5: Apply fit-to-glyph if enabled (scale down to fit within diamond)
+            if (settings != null && settings.getToggleValue("fit_to_glyph", false)) {
+                scaledBitmap = fitBitmapToGlyphShape(scaledBitmap, targetSize)
+            }
+
             // Step 2: Apply visual enhancements based on settings
             val processedBitmap = if (settings != null) {
                 applyVisualEnhancements(scaledBitmap, settings)
             } else {
                 scaledBitmap
             }
-            
+
             Log.v(LOG_TAG, "Processed album art for preview: ${targetSize}x${targetSize}")
             return processedBitmap
             
@@ -70,6 +75,41 @@ class CoverArtPreviewRenderer {
     /**
      * Efficiently scale bitmap to target size using optimal sampling.
      */
+    /**
+     * Scale bitmap down to fit entirely within the Glyph diamond shape,
+     * centering it on a black canvas at full grid size.
+     */
+    private fun fitBitmapToGlyphShape(bitmap: Bitmap, gridSize: Int): Bitmap {
+        val res = com.pauwma.glyphbeat.core.DeviceManager.resolution
+        val shape = res.shape
+
+        // Find the largest centered square that fits within the diamond shape
+        var fitSize = gridSize
+        for (s in gridSize downTo 1) {
+            val startRow = (gridSize - s) / 2
+            val endRow = startRow + s - 1
+            var fits = true
+            for (row in startRow..endRow) {
+                if (row < 0 || row >= gridSize || shape[row] < s) {
+                    fits = false
+                    break
+                }
+            }
+            if (fits) {
+                fitSize = s
+                break
+            }
+        }
+
+        val scaled = Bitmap.createScaledBitmap(bitmap, fitSize, fitSize, true)
+        val result = Bitmap.createBitmap(gridSize, gridSize, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(result)
+        canvas.drawColor(Color.BLACK)
+        val offset = (gridSize - fitSize) / 2f
+        canvas.drawBitmap(scaled, offset, offset, null)
+        return result
+    }
+
     private fun scaleBitmapEfficiently(source: Bitmap, targetSize: Int): Bitmap {
         // Calculate optimal inSampleSize for memory efficiency
         val inSampleSize = calculateInSampleSize(source.width, source.height, targetSize)
