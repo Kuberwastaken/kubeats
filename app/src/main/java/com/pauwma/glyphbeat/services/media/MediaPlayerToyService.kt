@@ -151,6 +151,11 @@ class MediaPlayerToyService : GlyphMatrixService("MediaPlayer-Demo") {
     private val settingsCheckInterval = 5000L // Check for settings changes every 5 seconds as fallback
     private var isSettingsListenerActive = false
     
+    // Inactivity timeout: turn off matrix after 60s of no playback
+    private var inactivityStartTime = 0L // When playback last stopped (0 = currently playing or not tracked yet)
+    private var isMatrixTimedOut = false // Whether the matrix has been turned off due to inactivity
+    private val inactivityTimeoutMs = 60_000L // 60 seconds
+
     // Audio analysis throttling to reduce log spam and CPU usage
     private var lastAudioAnalysisTime = 0L
     private var audioAnalysisInterval = 200L // Default: Update audio analysis every 200ms to reduce overhead
@@ -262,7 +267,13 @@ class MediaPlayerToyService : GlyphMatrixService("MediaPlayer-Demo") {
         currentPlayerState = initialPlayerState
         isPlaying = initPlaying && initWhitelisted
         hasActiveMedia = initialController != null && !initBlacklisted && initWhitelisted
-        
+
+        // Initialize inactivity tracking if not playing at startup
+        if (initialPlayerState != PlayerState.PLAYING) {
+            inactivityStartTime = System.currentTimeMillis()
+            Log.d(LOG_TAG, "Service started without active playback — inactivity timer started")
+        }
+
         // Start with proper initial frame based on actual media state
         val shouldAnimate = initialPlayerState == PlayerState.PLAYING
         val initialFrame = generateFrame(shouldAnimate, initialPlayerState)
@@ -338,12 +349,26 @@ class MediaPlayerToyService : GlyphMatrixService("MediaPlayer-Demo") {
                     
                     if (stateChanged || playingChanged) {
                         val previousState = currentPlayerState
-                        
+
                         // Update state immediately
                         currentPlayerState = newPlayerState
                         isPlaying = currentlyPlaying
                         hasActiveMedia = mediaAvailable
-                        
+
+                        // Track inactivity for timeout
+                        if (newPlayerState == PlayerState.PLAYING) {
+                            // Music resumed — clear inactivity tracking
+                            if (inactivityStartTime != 0L || isMatrixTimedOut) {
+                                Log.d(LOG_TAG, "Playback resumed — clearing inactivity timeout")
+                            }
+                            inactivityStartTime = 0L
+                            isMatrixTimedOut = false
+                        } else if (previousState == PlayerState.PLAYING) {
+                            // Just stopped playing — start inactivity timer
+                            inactivityStartTime = System.currentTimeMillis()
+                            Log.d(LOG_TAG, "Playback stopped — inactivity timer started (${inactivityTimeoutMs / 1000}s)")
+                        }
+
                         // Handle pause/resume frame logic (only when not predicted)
                         if (previousState == PlayerState.PLAYING && newPlayerState == PlayerState.PAUSED) {
                             pausedFrameIndex = currentFrameIndex
@@ -363,7 +388,7 @@ class MediaPlayerToyService : GlyphMatrixService("MediaPlayer-Demo") {
                                 Log.d(LOG_TAG, "Animation resumed from frame $pausedFrameIndex")
                             }
                         }
-                        
+
                         Log.d(LOG_TAG, "State change detected: $previousState -> $newPlayerState (playing: $currentlyPlaying)")
                     }
                 }
@@ -379,10 +404,35 @@ class MediaPlayerToyService : GlyphMatrixService("MediaPlayer-Demo") {
                 // Validate cached settings periodically (fallback mechanism) - DISABLED due to ANR risk
                 // validateCachedSettings() // Settings updates work via flow notifications
                 
+                // Check inactivity timeout
+                if (inactivityStartTime != 0L && !isMatrixTimedOut) {
+                    val inactiveDuration = System.currentTimeMillis() - inactivityStartTime
+                    if (inactiveDuration >= inactivityTimeoutMs) {
+                        Log.i(LOG_TAG, "Inactivity timeout reached (${inactiveDuration / 1000}s) — turning off matrix")
+                        isMatrixTimedOut = true
+                        // Send a blank frame to turn off all LEDs
+                        val blankFrame = IntArray(com.pauwma.glyphbeat.core.DeviceManager.resolution.flatSize) { 0 }
+                        uiScope.launch(Dispatchers.Main.immediate) {
+                            try {
+                                val matrixFrame = GlyphMatrixRenderer.createMatrixFrameWithBrightness(applicationContext, blankFrame, 255)
+                                glyphMatrixManager.setMatrixFrame(matrixFrame.render())
+                            } catch (e: IllegalStateException) {
+                                Log.w(LOG_TAG, "Glyph service not registered during timeout blanking: ${e.message}")
+                            }
+                        }
+                    }
+                }
+
+                // Skip frame rendering if matrix is timed out
+                if (isMatrixTimedOut) {
+                    delay(500L) // Slow polling while timed out — just watching for playback to resume
+                    continue
+                }
+
                 // Determine animation behavior based on effective state (includes predictions)
                 val effectiveState = getEffectivePlayerState()
                 val shouldAnimate = effectiveState == PlayerState.PLAYING
-                
+
                 // Generate frame based on effective state
                 val pixelArray = generateFrame(shouldAnimate, effectiveState)
                 
@@ -749,7 +799,15 @@ class MediaPlayerToyService : GlyphMatrixService("MediaPlayer-Demo") {
     private fun applyInstantStateChange(newState: PlayerState) {
         predictedPlayerState = newState
         predictionTimestamp = System.currentTimeMillis()
-        
+
+        // Update inactivity tracking for predictions
+        if (newState == PlayerState.PLAYING) {
+            inactivityStartTime = 0L
+            isMatrixTimedOut = false
+        } else if (currentPlayerState == PlayerState.PLAYING) {
+            inactivityStartTime = System.currentTimeMillis()
+        }
+
         // Handle pause/resume frame logic for prediction
         if (currentPlayerState == PlayerState.PLAYING && newState == PlayerState.PAUSED) {
             pausedFrameIndex = currentFrameIndex
