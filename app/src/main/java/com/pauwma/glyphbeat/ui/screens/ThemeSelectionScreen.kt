@@ -1,7 +1,12 @@
 package com.pauwma.glyphbeat.ui.screens
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.provider.OpenableColumns
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -14,6 +19,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DeleteOutline
+import androidx.compose.material.icons.rounded.AddPhotoAlternate
 import androidx.compose.material.icons.rounded.OpenInNew
 import androidx.compose.material.icons.rounded.People
 import androidx.compose.material3.*
@@ -40,8 +46,10 @@ import com.pauwma.glyphbeat.themes.base.AnimationTheme
 import com.pauwma.glyphbeat.themes.animation.CustomTheme
 import com.pauwma.glyphbeat.ui.settings.ThemeSettingsSheet
 import com.pauwma.glyphbeat.ui.settings.ThemeSettingsProvider
+import com.pauwma.glyphbeat.data.GifImportManager
 import com.pauwma.glyphbeat.data.ThemeRepository
 import com.pauwma.glyphbeat.ui.ThemePreviewCard
+import kotlinx.coroutines.launch
 import com.pauwma.glyphbeat.ui.CompactThemePreviewCard
 
 /**
@@ -68,6 +76,44 @@ fun ThemeSelectionScreen(
 
     // Custom theme delete confirmation
     var themeToDelete by remember { mutableStateOf<CustomTheme?>(null) }
+
+    // GIF upload state
+    val scope = rememberCoroutineScope()
+    var isImportingGif by remember { mutableStateOf(false) }
+    val gifPicker = rememberLauncherForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        if (uri != null && !isImportingGif) {
+            val defaultName = queryDisplayName(context, uri)
+            isImportingGif = true
+            scope.launch {
+                val result = GifImportManager(context).importGif(uri, defaultName)
+                isImportingGif = false
+                when (result) {
+                    is GifImportManager.ImportResult.Success -> {
+                        themeRepository.reloadCustomThemes()
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.gif_import_success, result.themeName),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                    is GifImportManager.ImportResult.ThemeLimitReached ->
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.gif_import_limit),
+                            Toast.LENGTH_LONG
+                        ).show()
+                    is GifImportManager.ImportResult.Error ->
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.gif_import_error, result.message),
+                            Toast.LENGTH_LONG
+                        ).show()
+                }
+            }
+        }
+    }
 
     // Read custom themes at composable level so state changes trigger recomposition
     val importedThemes = themeRepository.customThemes
@@ -107,11 +153,11 @@ fun ThemeSelectionScreen(
                 modifier = Modifier.fillMaxWidth(),
                 color = MaterialTheme.colorScheme.background
             ) {
-                Box(
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 10.dp),
-                    contentAlignment = Alignment.CenterStart
+                        .padding(start = 16.dp, end = 8.dp, top = 10.dp, bottom = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = localeContext.getString(R.string.screen_animation_themes),
@@ -119,8 +165,29 @@ fun ThemeSelectionScreen(
                             fontWeight = FontWeight.Bold,
                             fontFamily = customFont
                         ),
-                        color = MaterialTheme.colorScheme.onBackground
+                        color = MaterialTheme.colorScheme.onBackground,
+                        modifier = Modifier.weight(1f)
                     )
+
+                    // Upload a GIF as a looping theme
+                    IconButton(
+                        onClick = { if (!isImportingGif) gifPicker.launch("image/gif") },
+                        enabled = !isImportingGif
+                    ) {
+                        if (isImportingGif) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(22.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.onBackground
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Rounded.AddPhotoAlternate,
+                                contentDescription = localeContext.getString(R.string.gif_import_button),
+                                tint = MaterialTheme.colorScheme.onBackground
+                            )
+                        }
+                    }
                 }
             }
 
@@ -225,6 +292,31 @@ fun ThemeSelectionScreen(
                 } else null
             )
         }
+    }
+}
+
+/**
+ * Best-effort display name for a picked content Uri, used as the default GIF theme title.
+ * Returns the file name without its extension, or null if it can't be resolved.
+ */
+private fun queryDisplayName(context: Context, uri: Uri): String? {
+    return try {
+        context.contentResolver.query(
+            uri,
+            arrayOf(OpenableColumns.DISPLAY_NAME),
+            null,
+            null,
+            null
+        )?.use { cursor ->
+            if (cursor.moveToFirst()) {
+                val index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                if (index >= 0) cursor.getString(index)?.substringBeforeLast('.') else null
+            } else {
+                null
+            }
+        }
+    } catch (e: Exception) {
+        null
     }
 }
 
