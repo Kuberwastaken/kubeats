@@ -7,6 +7,11 @@
 
 [![Kubeats-preview](https://github.com/user-attachments/assets/921ea196-97eb-4eff-b774-0fb7b2504cb0)](https://play.google.com/store/apps/details?id=com.pauwma.glyphbeat)
 
+### What's New in v1.7.0
+
+- **🎞️ Upload Your Own GIF** - tap **Upload GIF** on the themes screen to pick any GIF; it's turned into a custom theme that loops on the Glyph matrix while your music plays
+- **Custom loop controls** - GIF themes get the same speed and loop-mode (forward / reverse / ping-pong) settings as imported themes, and can be deleted anytime
+
 ### What's New in v1.6.7
 
 - **Better Art Representation** - using a custom technique to resize covers
@@ -25,6 +30,7 @@
 | **🔤 Scroll Text** | Title, artist, album all flexin’ on a nonstop scroll |
 | **🎯 Minimal** | Clean, simple animation for a subtle effect |
 | **👾 Glyphy** | Animated character that grooves with the music |
+| **🎞️ Your GIF** | Upload any GIF and it loops on the Glyph while your music plays |
 | **☰ More** | More to discover & coming soon |
 
 ### Track Control Themes
