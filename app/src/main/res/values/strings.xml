@@ -388,5 +388,9 @@
     <string name="delete_theme_message">Delete \"%1$s\"? This cannot be undone.</string>
     <string name="delete">Delete</string>
     <string name="cancel">Cancel</string>
+    <string name="gif_import_button">Upload GIF</string>
+    <string name="gif_import_success">Added \"%1$s\" — pick it from your themes</string>
+    <string name="gif_import_limit">Theme limit reached (20). Delete one to add a GIF.</string>
+    <string name="gif_import_error">Couldn\'t import GIF: %1$s</string>
 
 </resources>
